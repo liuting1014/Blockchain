@@ -1,6 +1,6 @@
-# Initializing our (empty) blockchain list
 blockchain = []
-
+open_transactions = []
+owner = 'Ting'
 
 def get_last_blockchain_value():
     """ Returns the last value of the current blockchain. """
@@ -8,26 +8,25 @@ def get_last_blockchain_value():
         return None
     return blockchain[-1]
 
-# This function accepts two arguments.
-# One required one (transaction_amount) and one optional one (last_transaction)
-# The optional one is optional because it has a default value => [1]
+
+def add_transaction(recipient, sender = owner, amount=1.0):
+    transaction = {
+        'sender': sender,
+        'recipient': recipient,
+        'amount': amount
+    }
+
+    open_transactions.append(transaction)
 
 
-def add_transaction(transaction_amount, last_transaction=[1]):
-    """ Append a new value as well as the last blockchain value to the blockchain.
-
-    Arguments:
-        :transaction_amount: The amount that should be added.
-        :last_transaction: The last blockchain transaction (default [1]).
-    """
-    if last_transaction == None:
-        last_transaction = [1]
-    blockchain.append([last_transaction, transaction_amount])
+def mine_block():
+    pass
 
 
 def get_transaction_value():
-    user_input = float(input('Your transaction amount please: '))
-    return user_input
+    tx_recipient = input('Enter the recipient of the transaction:')
+    tx_amount = float(input('Your transaction amount please: '))
+    return tx_recipient, tx_amount
 
 
 def get_user_choice():
@@ -65,8 +64,10 @@ while True:
     print('q: Quit')
     user_choice = get_user_choice()
     if user_choice == '1':
-        tx_amount = get_transaction_value()
-        add_transaction(tx_amount, get_last_blockchain_value())
+        tx_data = get_transaction_value()
+        recipient, amount = tx_data
+        add_transaction(recipient, amount=amount)
+        print(open_transactions)
     elif user_choice == '2':
         print_blockchain_elements()
     elif user_choice == 'h':
@@ -79,7 +80,6 @@ while True:
     if not verify_chain():
         print('Invalid blockchain!')
         break
-
 
 print('Done!')
  
