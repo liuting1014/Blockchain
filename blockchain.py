@@ -82,7 +82,7 @@ def get_balance(participant):
 	for tx in tx_recipient:
 		if len(tx) > 0:
 			amount_received += tx[0]
-	return amount_sent, amount_received
+	return amount_received - amount_sent
 
 
 while True:
