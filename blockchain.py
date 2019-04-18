@@ -1,5 +1,6 @@
 import hashlib
 import json
+from collections import OrderedDict
 
 MINING_REWARD = 10
 genesis_block = {
@@ -22,11 +23,7 @@ def get_last_blockchain_value():
 
 
 def add_transaction(recipient, sender=owner, amount=1.0):
-	transaction = {
-		'sender': sender,
-		'recipient': recipient,
-		'amount': amount
-	}
+	transaction = OrderedDict([('sender', sender), ('recipient', recipient), ('amount', amount)])
 	if verify_transaction(transaction):
 		open_transactions.append(transaction)
 		participants.add(sender)
@@ -48,11 +45,7 @@ def mine_block():
 	last_block = blockchain[-1]
 	hashed_block = hash_block(last_block)
 	proof = generate_proof_of_work()
-	reward_transaction = {
-		'sender': 'MINING',
-		'recipient': owner,
-		'amount': MINING_REWARD
-	}
+	reward_transaction = OrderedDict([('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
 	# shallow copy
 	copied_transactions = open_transactions[:]
 	copied_transactions.append(reward_transaction)
@@ -85,7 +78,7 @@ def print_blockchain_elements():
 
 
 def hash_block(block):
-	return hashlib.sha256(json.dumps(block).encode()).hexdigest()
+	return hashlib.sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
 
 
 def validate_proof(transactions, last_hash, proof):
