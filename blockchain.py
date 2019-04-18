@@ -1,4 +1,5 @@
-import functools
+import hashlib
+import json
 
 MINING_REWARD = 10
 genesis_block = {
@@ -35,7 +36,7 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 
 def verify_transaction(transaction):
 	sender_balance = get_balance(transaction['sender'])
-	return sender_balance >= transaction['amount']
+	return sender_balance >= transaction['amount'] > 0
 
 
 def verify_transactions():
@@ -81,7 +82,7 @@ def print_blockchain_elements():
 
 
 def hash_block(block):
-	return '-'.join([str(block[key]) for key in block])
+	return hashlib.sha256(json.dumps(block).encode()).hexdigest()
 
 
 def verify_chain():
