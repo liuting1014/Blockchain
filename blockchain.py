@@ -1,3 +1,5 @@
+import functools
+
 MINING_REWARD = 10
 genesis_block = {
 	'previous-hash': '',
@@ -95,15 +97,11 @@ def get_balance(participant):
 	tx_by_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
 	open_tx_by_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
 	tx_by_sender.append(open_tx_by_sender)
-	amount_sent = 0
-	for tx in tx_by_sender:
-		if len(tx) > 0:
-			amount_sent += tx[0]
+	# amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx_amt) > 0 else 0, tx_by_sender, 0)
+	amount_sent = sum([int(tx[0]) if len(tx) > 0 else 0 for tx in tx_by_sender])
 	tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
-	amount_received = 0
-	for tx in tx_recipient:
-		if len(tx) > 0:
-			amount_received += tx[0]
+	amount_received = sum([int(tx[0]) if len(tx) > 0 else 0 for tx in tx_recipient])
+	# amount_received = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx_amt) > 0 else 0, tx_recipient, 0)
 	return amount_received - amount_sent
 
 
@@ -146,5 +144,6 @@ while True:
 	if not verify_chain():
 		print('Invalid blockchain!')
 		break
-	print(get_balance(owner))
+	print('Balance of {}: {:*^10.2f}'.format(owner, get_balance(owner)))
 print('Done!')
+
