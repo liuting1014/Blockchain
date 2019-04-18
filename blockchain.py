@@ -36,6 +36,10 @@ def verify_transaction(transaction):
 	return sender_balance >= transaction['amount']
 
 
+def verify_transactions():
+	return all([verify_transaction(tx) for tx in open_transactions])
+
+
 def mine_block():
 	last_block = blockchain[-1]
 	hashed_block = hash_block(last_block)
@@ -108,6 +112,7 @@ while True:
 	print('1: Add a new transaction value')
 	print('2: Mine a block')
 	print('3: Print blocks')
+	print('4: Check transactions validity')
 	print('h: Manipulate the chain')
 	print('q: Quit')
 	user_choice = get_user_choice()
@@ -123,6 +128,8 @@ while True:
 		open_transactions = []
 	elif user_choice == '3':
 		print_blockchain_elements()
+	elif user_choice == '4':
+		verify_transactions()
 	elif user_choice == 'h':
 		if len(blockchain) >= 1:
 			blockchain[0] = {
