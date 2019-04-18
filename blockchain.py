@@ -30,6 +30,7 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 		return True
 	return False
 
+
 def verify_transaction(transaction):
 	sender_balance = get_balance(transaction['sender'])
 	return sender_balance >= transaction['amount']
@@ -43,11 +44,13 @@ def mine_block():
 		'recipient': owner,
 		'amount': MINING_REWARD
 	}
-	open_transactions.append(reward_transaction)
+	# shallow copy
+	copied_transactions = open_transactions[:]
+	copied_transactions.append(reward_transaction)
 	block = {
 		'previous_hash': hashed_block,
 		'index': len(blockchain),
-		'transactions': open_transactions
+		'transactions': copied_transactions
 	}
 	blockchain.append(block)
 	return True
