@@ -98,9 +98,9 @@ def get_balance(participant):
 	open_tx_by_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
 	tx_by_sender.append(open_tx_by_sender)
 	# amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx_amt) > 0 else 0, tx_by_sender, 0)
-	amount_sent = sum([int(tx[0]) if len(tx) > 0 else 0 for tx in tx_by_sender])
+	amount_sent = sum([sum(tx) for tx in tx_by_sender])
 	tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
-	amount_received = sum([int(tx[0]) if len(tx) > 0 else 0 for tx in tx_recipient])
+	amount_received = sum([sum(tx) for tx in tx_recipient])
 	# amount_received = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx_amt) > 0 else 0, tx_recipient, 0)
 	return amount_received - amount_sent
 
