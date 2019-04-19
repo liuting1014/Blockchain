@@ -1,10 +1,10 @@
 import pickle
 from time import time
 
-import hash_util
+from utils import hash_util
 from block import Block
 from transaction import Transaction
-from utils import Utils
+from utils.verification import Verification
 
 MINING_REWARD = 10
 
@@ -60,7 +60,7 @@ class Blockchain:
 		last_block = self.__chain[-1]
 		last_hash = hash_util.hash_block(last_block)
 		proof = 0
-		while not Utils.validate_proof(self.__open_transactions, last_hash, proof):
+		while not Verification.validate_proof(self.__open_transactions, last_hash, proof):
 			proof += 1
 		return proof
 
@@ -82,7 +82,7 @@ class Blockchain:
 
 	def add_transaction(self, recipient, sender, amount=1.0):
 		transaction = Transaction(sender, recipient, amount)
-		if Utils.verify_transaction(transaction, self.get_balance):
+		if Verification.verify_transaction(transaction, self.get_balance):
 			self.__open_transactions.append(transaction)
 			self.save_data()
 			return True

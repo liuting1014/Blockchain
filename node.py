@@ -1,6 +1,4 @@
-from uuid import uuid4
-
-from utils import Utils
+from utils.verification import Verification
 from blockchain import Blockchain
 
 
@@ -31,12 +29,12 @@ class Node:
 			elif user_choice == "3":
 				self.print_blockchain_elements()
 			elif user_choice == "4":
-				Utils.verify_transactions(self.blockchain.get_open_transactions(), self.blockchain.get_balance)
+				Verification.verify_transactions(self.blockchain.get_open_transactions(), self.blockchain.get_balance)
 			elif user_choice == "q":
 				break
 			else:
 				print("Input was invalid, please pick a value from the list!")
-			if not Utils.verify_chain(self.blockchain.chain):
+			if not Verification.verify_chain(self.blockchain.chain):
 				print("Invalid blockchain!")
 				break
 			print("Balance of {}: {:*^10.2f}".format(self.id, self.blockchain.get_balance()))

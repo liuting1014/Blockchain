@@ -1,9 +1,9 @@
 import hashlib
 
-import hash_util
+from utils import hash_util
 
 
-class Utils:
+class Verification:
 	@classmethod
 	def verify_chain(cls, blockchain):
 		for (index, block) in enumerate(blockchain):
