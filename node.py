@@ -31,30 +31,30 @@ class Node:
 			elif user_choice == "3":
 				self.print_blockchain_elements()
 			elif user_choice == "4":
-				verifier = Utils()
-				verifier.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance)
+				Utils.verify_transactions(self.blockchain.get_open_transactions(), self.blockchain.get_balance)
 			elif user_choice == "q":
 				break
 			else:
 				print("Input was invalid, please pick a value from the list!")
-			verifier = Utils()
-			if not verifier.verify_chain(self.blockchain.chain):
+			if not Utils.verify_chain(self.blockchain.get_chain()):
 				print("Invalid blockchain!")
 				break
 			print("Balance of {}: {:*^10.2f}".format(self.id, self.blockchain.get_balance()))
 		print("Done!")
 
-	def get_user_choice(self):
+	@staticmethod
+	def get_user_choice():
 		user_input = input("Your choice: ")
 		return user_input
 
 	def print_blockchain_elements(self):
 		# Output the blockchain list to the console
-		for block in self.blockchain.chain:
+		for block in self.blockchain.get_chain():
 			print("Outputting Block")
 			print(block)
 
-	def get_transaction_value(self):
+	@staticmethod
+	def get_transaction_value():
 		tx_recipient = input("Enter the recipient of the transaction:")
 		tx_amount = float(input("Your transaction amount please: "))
 		return tx_recipient, tx_amount
