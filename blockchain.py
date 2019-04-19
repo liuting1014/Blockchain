@@ -1,8 +1,11 @@
 import hashlib
 import pickle
 from collections import OrderedDict
+from time import time
 
 import hash_util
+from block import Block
+
 
 MINING_REWARD = 10
 blockchain = []
@@ -75,12 +78,7 @@ def mine_block():
 	# shallow copy
 	copied_transactions = open_transactions[:]
 	copied_transactions.append(reward_transaction)
-	block = {
-		"previous_hash": hashed_block,
-		"index": len(blockchain),
-		"transactions": copied_transactions,
-		"proof": proof
-	}
+	block = Block(len(blockchain), hashed_block, copied_transactions, proof, time())
 	blockchain.append(block)
 	return True
 
@@ -123,21 +121,21 @@ def verify_chain():
 	for (index, block) in enumerate(blockchain):
 		if index == 0:
 			continue
-		if block["previous_hash"] != hash_util.hash_block(blockchain[index - 1]):
+		if block.previous_hash != hash_util.hash_block(blockchain[index - 1]):
 			return False
-		if not validate_proof(block["transactions"][:-1], block["previous_hash"], block["proof"]):
+		if not validate_proof(block.transactions[:-1], block.previous_hash, block.proof):
 			print("Proof of work is invalid")
 			return False
 	return True
 
 
 def get_balance(participant):
-	tx_by_sender = [[tx["amount"] for tx in block["transactions"] if tx["sender"] == participant] for block in
+	tx_by_sender = [[tx["amount"] for tx in block.transactions if tx["sender"] == participant] for block in
 					blockchain]
 	open_tx_by_sender = [tx["amount"] for tx in open_transactions if tx["sender"] == participant]
 	tx_by_sender.append(open_tx_by_sender)
 	amount_sent = sum([sum(tx) for tx in tx_by_sender])
-	tx_recipient = [[tx["amount"] for tx in block["transactions"] if tx["recipient"] == participant] for block in
+	tx_recipient = [[tx["amount"] for tx in block.transactions if tx["recipient"] == participant] for block in
 					blockchain]
 	amount_received = sum([sum(tx) for tx in tx_recipient])
 	return amount_received - amount_sent
@@ -148,8 +146,7 @@ while True:
 	print("1: Add a new transaction value")
 	print("2: Mine a block")
 	print("3: Print blocks")
-	print("4: Check transactions validity")
-	print("h: Manipulate the chain")
+	print("4: Check validity of all transactions")
 	print("q: Quit")
 	user_choice = get_user_choice()
 	if user_choice == "1":
@@ -167,15 +164,6 @@ while True:
 		print_blockchain_elements()
 	elif user_choice == "4":
 		verify_transactions()
-	elif user_choice == "h":
-		if len(blockchain) >= 1:
-			blockchain[0] = {
-				"previous_hash": "",
-				"index": 0,
-				"transactions": [
-					{"sender": "Whoever", "recipient": "me", "amount": "whatever"}
-				]
-			}
 	elif user_choice == "q":
 		break
 	else:
