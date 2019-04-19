@@ -36,7 +36,7 @@ class Node:
 				break
 			else:
 				print("Input was invalid, please pick a value from the list!")
-			if not Utils.verify_chain(self.blockchain.get_chain()):
+			if not Utils.verify_chain(self.blockchain.chain):
 				print("Invalid blockchain!")
 				break
 			print("Balance of {}: {:*^10.2f}".format(self.id, self.blockchain.get_balance()))
@@ -49,7 +49,7 @@ class Node:
 
 	def print_blockchain_elements(self):
 		# Output the blockchain list to the console
-		for block in self.blockchain.get_chain():
+		for block in self.blockchain.chain:
 			print("Outputting Block")
 			print(block)
 

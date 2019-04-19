@@ -12,13 +12,26 @@ MINING_REWARD = 10
 class Blockchain:
 	def __init__(self, hosting_node_id):
 		genesis_block = Block(0, "", [], 1014, time())
-		self.__chain = [genesis_block]
-		self.__open_transactions = []
+		self.chain = [genesis_block]
+		self.open_transactions = []
 		self.load_data()
 		self.hosting_node = hosting_node_id
 
-	def get_chain(self):
-		return self.__chain
+	@property
+	def chain(self):
+		return self.__chain[:]
+
+	@chain.setter
+	def chain(self, val):
+		self.__chain = val
+
+	@property
+	def open_transactions(self):
+		return self.__open_transactions[:]
+
+	@open_transactions.setter
+	def open_transactions(self, val):
+		self.__open_transactions = val
 
 	def get_open_transactions(self):
 		return self.__open_transactions
@@ -27,8 +40,8 @@ class Blockchain:
 		try:
 			with open("blockchain.txt", mode="rb") as file:
 				file_content = pickle.loads(file.read())
-				self.__chain = file_content["chain"]
-				self.__open_transactions = file_content["open_transactions"]
+				self.chain = file_content["chain"]
+				self.open_transactions = file_content["open_transactions"]
 		except IOError:
 			pass
 
