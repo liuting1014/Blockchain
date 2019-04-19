@@ -5,37 +5,39 @@ from collections import OrderedDict
 import hash_util
 
 MINING_REWARD = 10
-genesis_block = {
-	"previous_hash": "",
-	"index": 0,
-	"transactions": [],
-	"proof": 1014
-}
-blockchain = [genesis_block]
+blockchain = []
 open_transactions = []
 owner = "Ting"
 participants = {"Ting"}
 
 
 def load_data():
-	with open("blockchain.txt", mode="rb") as file:
-		file_content = pickle.loads(file.read())
-		global blockchain
-		global open_transactions
-		blockchain = file_content["chain"]
-		open_transactions = file_content["open_transactions"]
+	global blockchain
+	global open_transactions
+	try:
+		with open("blockchain.txt", mode="rb") as file:
+			file_content = pickle.loads(file.read())
+			blockchain = file_content["chain"]
+			open_transactions = file_content["open_transactions"]
+	except IOError:
+		genesis_block = Block(0, "", [], 1014, time())
+		blockchain = [genesis_block]
+		open_transactions = []
 
 
 load_data()
 
 
 def save_data():
-	with open("blockchain.txt", mode="wb") as file:
-		data = {
-			"chain": blockchain,
-			"open_transactions": open_transactions
-		}
-		file.write(pickle.dumps(data))
+	try:
+		with open("blockchain.txt", mode="wb") as file:
+			data = {
+				"chain": blockchain,
+				"open_transactions": open_transactions
+			}
+			file.write(pickle.dumps(data))
+	except IOError:
+		print('Saving to file failed!')
 
 
 def get_last_blockchain_value():
