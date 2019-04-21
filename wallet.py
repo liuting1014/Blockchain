@@ -1,5 +1,7 @@
 from Cryptodome.PublicKey import RSA
 from Cryptodome import Random
+from Cryptodome.Signature import PKCS1_v1_5
+from Cryptodome.Hash import SHA256
 import binascii
 
 
@@ -33,10 +35,17 @@ class Wallet:
 		except IOError:
 			print("Failed to save wallet")
 
-	def generate_keys(self):
+	@staticmethod
+	def generate_keys():
 		private_key = RSA.generate(1024, Random.new().read)
 		public_key = private_key.publickey()
 		return (
 			binascii.hexlify(private_key.export_key(format='DER')).decode('ascii'),
 			binascii.hexlify(public_key.export_key(format='DER')).decode('ascii')
 		)
+
+	def sign_transaction(self, sender, recipient, amount):
+		signer = PKCS1_v1_5.new(RSA.importKey(binascii.unhexlify(self.private_key)))
+		h = SHA256.new((str(sender) + str(recipient) + str(amount)).encode('utf8'))
+		signature = signer.sign(h)
+		return binascii.hexlify(signature).decode('ascii')

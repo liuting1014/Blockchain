@@ -80,10 +80,10 @@ class Blockchain:
 			return None
 		return self.__chain[-1]
 
-	def add_transaction(self, recipient, sender, amount=1.0):
+	def add_transaction(self, recipient, sender, signature, amount=1.0):
 		if self.hosting_node is None:
 			return False
-		transaction = Transaction(sender, recipient, amount)
+		transaction = Transaction(sender, recipient, signature, amount)
 		if Verification.verify_transaction(transaction, self.get_balance):
 			self.__open_transactions.append(transaction)
 			self.save_data()
@@ -96,7 +96,7 @@ class Blockchain:
 		last_block = self.__chain[-1]
 		hashed_block = hash_util.hash_block(last_block)
 		proof = self.generate_proof_of_work()
-		reward_transaction = Transaction("MINING", self.hosting_node, MINING_REWARD)
+		reward_transaction = Transaction("MINING", self.hosting_node, '', MINING_REWARD)
 		# shallow copy
 		copied_transactions = self.__open_transactions[:]
 		copied_transactions.append(reward_transaction)
