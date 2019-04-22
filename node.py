@@ -1,81 +1,28 @@
-from utils.verification import Verification
+from flask import Flask, jsonify
+from flask_cors import CORS
+
 from blockchain import Blockchain
 from wallet import Wallet
 
+app = Flask(__name__)
+wallet = Wallet()
+blockchain = Blockchain(wallet.public_key)
+CORS(app)
 
-class Node:
-	def __init__(self):
-		# self.wallet.public_key = str(uuid4())
-		self.wallet = Wallet()
-		self.wallet.create_keys()
-		self.blockchain = Blockchain(self.wallet.public_key)
 
-	def prompt_for_input(self):
-		while True:
-			print("Please choose")
-			print("1: Add a new transaction value")
-			print("2: Mine a block")
-			print("3: Print blocks")
-			print("4: Check validity of all transactions")
-			print("5: Create wallet, make sure to save too")
-			print("6: Load wallet")
-			print("7: Save wallet")
-			print("q: Quit")
-			user_choice = self.get_user_choice()
-			if user_choice == "1":
-				tx_data = self.get_transaction_value()
-				recipient, amount = tx_data
-				signature = self.wallet.sign_transaction(self.wallet.public_key, recipient, amount)
-				if self.blockchain.add_transaction(recipient, self.wallet.public_key, signature, amount=amount):
-					print("Added transaction")
-				else:
-					print("Transaction failed")
-			elif user_choice == "2":
-				if not self.blockchain.mine_block():
-					print("No wallet found, mining failed")
-			elif user_choice == "3":
-				self.print_blockchain_elements()
-			elif user_choice == "4":
-				if Verification.verify_transactions(self.blockchain.get_open_transactions(), self.blockchain.get_balance):
-					print("All transactions are valid")
-				else:
-					print("There are invalid transactions")
-			elif user_choice == "5":
-				self.wallet.create_keys()
-				self.blockchain = Blockchain(self.wallet.public_key)
-			elif user_choice == "6":
-				self.wallet.load_keys()
-				self.blockchain = Blockchain(self.wallet.public_key)
-			elif user_choice == "7":
-				self.wallet.save_keys()
-			elif user_choice == "q":
-				break
-			else:
-				print("Input was invalid, please pick a value from the list!")
-			if not Verification.verify_chain(self.blockchain.chain):
-				print("Invalid blockchain!")
-				break
-			print("Balance of {}: {:*^10.2f}".format(self.wallet.public_key, self.blockchain.get_balance()))
-		print("Done!")
+@app.route('/', methods=['GET'])
+def get_ui():
+	return "This works!"
 
-	@staticmethod
-	def get_user_choice():
-		user_input = input("Your choice: ")
-		return user_input
 
-	def print_blockchain_elements(self):
-		# Output the blockchain list to the console
-		for block in self.blockchain.chain:
-			print("Outputting Block")
-			print(block)
-
-	@staticmethod
-	def get_transaction_value():
-		tx_recipient = input("Enter the recipient of the transaction:")
-		tx_amount = float(input("Your transaction amount please: "))
-		return tx_recipient, tx_amount
+@app.route('/chain', methods=['GET'])
+def get_chain():
+	chain_snapshot = blockchain.chain
+	dict_chain = [block.__dict__.copy() for block in chain_snapshot]
+	for dict_block in dict_chain:
+		dict_block['transactions'] = [tx.__dict__ for tx in dict_block['transactions']]
+	return jsonify(dict_chain), 200
 
 
 if __name__ == '__main__':
-	node = Node()
-	node.prompt_for_input()
+	app.run(host='0.0.0.0', port=5000)
