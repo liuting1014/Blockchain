@@ -11,12 +11,14 @@ MINING_REWARD = 10
 
 
 class Blockchain:
-	def __init__(self, hosting_node_id):
+	def __init__(self, public_key, node_id):
 		genesis_block = Block(0, "", [], 1014, time())
 		self.chain = [genesis_block]
 		self.open_transactions = []
+		self.public_key = public_key
+		self.__peer_nodes = set()
+		self.node_id = node_id
 		self.load_data()
-		self.hosting_node = hosting_node_id
 
 	@property
 	def chain(self):
@@ -39,19 +41,21 @@ class Blockchain:
 
 	def load_data(self):
 		try:
-			with open("blockchain.txt", mode="rb") as file:
+			with open("blockchain-{}.txt".format(self.node_id), mode="rb") as file:
 				file_content = pickle.loads(file.read())
 				self.chain = file_content["chain"]
 				self.open_transactions = file_content["open_transactions"]
+				self.__peer_nodes = set(file_content["peer_nodes"])
 		except IOError:
 			pass
 
 	def save_data(self):
 		try:
-			with open("blockchain.txt", mode="wb") as file:
+			with open("blockchain-{}.txt".format(self.node_id), mode="wb") as file:
 				data = {
 					"chain": self.__chain,
-					"open_transactions": self.__open_transactions
+					"open_transactions": self.__open_transactions,
+					"peer_nodes": list(self.__peer_nodes)
 				}
 				file.write(pickle.dumps(data))
 		except IOError:
@@ -66,9 +70,9 @@ class Blockchain:
 		return proof
 
 	def get_balance(self):
-		if self.hosting_node is None:
+		if self.public_key is None:
 			return None
-		participant = self.hosting_node
+		participant = self.public_key
 		tx_by_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in self.__chain]
 		open_tx_by_sender = [tx.amount for tx in self.__open_transactions if tx.sender == participant]
 		tx_by_sender.append(open_tx_by_sender)
@@ -84,7 +88,7 @@ class Blockchain:
 		return self.__chain[-1]
 
 	def add_transaction(self, recipient, sender, signature, amount=1.0):
-		if self.hosting_node is None:
+		if self.public_key is None:
 			return False
 		transaction = Transaction(sender, recipient, signature, amount)
 		if Verification.verify_transaction(transaction, self.get_balance):
@@ -94,12 +98,12 @@ class Blockchain:
 		return False
 
 	def mine_block(self):
-		if self.hosting_node is None:
+		if self.public_key is None:
 			return None
 		last_block = self.__chain[-1]
 		hashed_block = hash_util.hash_block(last_block)
 		proof = self.generate_proof_of_work()
-		reward_transaction = Transaction("MINING", self.hosting_node, '', MINING_REWARD)
+		reward_transaction = Transaction("MINING", self.public_key, '', MINING_REWARD)
 		# shallow copy
 		copied_transactions = self.__open_transactions[:]
 		for tx in copied_transactions:
@@ -112,3 +116,13 @@ class Blockchain:
 		self.save_data()
 		return block
 
+	def add_peer_node(self, node):
+		self.__peer_nodes.add(node)
+		self.save_data()
+
+	def remove_peer_node(self, node):
+		self.__peer_nodes.discard(node)
+		self.save_data()
+
+	def get_peer_nodes(self):
+		return list(self.__peer_nodes)
