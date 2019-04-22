@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from blockchain import Blockchain
@@ -63,9 +63,54 @@ def get_balance():
 		}
 		return jsonify(response), 500
 
+
 @app.route('/', methods=['GET'])
 def get_ui():
-	return "This works!"
+	return send_from_directory('ui', 'node.html')
+
+
+@app.route('/transaction', methods=['POST'])
+def add_transaction():
+	if wallet.public_key is None:
+		response = {
+			'message': 'No wallet wet up'
+		}
+		return jsonify(response), 400
+	data = request.get_json()
+	if not data:
+		response = {
+			'message': 'No data found'
+		}
+		return jsonify(response), 400
+
+	required_fields = ['recipient', 'amount']
+	if not all(field in data for field in required_fields):
+		response = {
+			'message': 'Required data is missing'
+		}
+		return jsonify(response), 400
+
+	recipient = data['recipient']
+	amount = data['amount']
+	signature = wallet.sign_transaction(wallet.public_key, recipient, amount)
+	success = blockchain.add_transaction(recipient, wallet.public_key, signature, amount)
+	if success:
+		response = {
+			'message': 'Successfully added transaction',
+			'transaction': {
+				'sender': wallet.public_key,
+				'recipient': recipient,
+				'amount': amount,
+				'signature': signature
+			},
+			'balance': blockchain.get_balance()
+		}
+		return jsonify(response), 201
+	else:
+		response = {
+			'message': 'Failed to create a transaction'
+		}
+		return jsonify(response), 500
 
 
 @app.route('/mine', methods=['POST'])
@@ -86,6 +131,13 @@ def mine():
 			'wallet_set_up': wallet.public_key is not None
 		}
 		return jsonify(response), 500
+
+
+@app.route('/transactions', methods=['GET'])
+def get_open_transactions():
+	transactions = blockchain.get_open_transactions()
+	dict_transactions = [tx.__dict__ for tx in transactions ]
+	return jsonify(dict_transactions), 200
 
 
 @app.route('/chain', methods=['GET'])
